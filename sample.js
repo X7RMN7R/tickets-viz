@@ -1,6 +1,10 @@
 // This code sample uses the 'request' library:
 // https://www.npmjs.com/package/request
 var request = require('request');
+var fs = require("fs");
+
+var authData = JSON.parse(fs.readFileSync(".auth", "utf8"));
+console.log(authData);
 
 var jqlRequest = 'MES AND status in (Blocked, "In Progress", OPEN, Reopened, Reviewing, Tested, "Waiting for external release") AND Sous-projets = LP ORDER BY priority DESC, updated DESC';
 
@@ -24,7 +28,7 @@ var bodyData = `{
 var options = {
     method: 'POST',
     url: 'https://vif-hub.atlassian.net/rest/api/3/search',
-    auth: /* See .auth file */,
+    auth: authData,
     headers: {
       'Accept': 'application/json',
       'Content-type': 'application/json'
