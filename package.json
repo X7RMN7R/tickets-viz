@@ -9,6 +9,7 @@
   },
   "homepage": "https://github.com/X7RMN7R/ticket-viz",
   "dependencies": {
+    "lodash": "^4.17.11",
     "request": "^2.88.0"
   }
 }

@@ -2,28 +2,31 @@
 // https://www.npmjs.com/package/request
 var request = require('request');
 var fs = require("fs");
+var _ = require('lodash');
 
 var authData = JSON.parse(fs.readFileSync(".auth", "utf8"));
 console.log(authData);
 
-var jqlRequest = 'MES AND status in (Blocked, "In Progress", OPEN, Reopened, Reviewing, Tested, "Waiting for external release") AND Sous-projets = LP ORDER BY priority DESC, updated DESC';
-
-var bodyData = `{
+var bodyData = {
   "expand": [
     "names",
     "schema",
     "operations"
   ],
-  "jql": "project = MES AND status in (Blocked, 'In Progress', OPEN, Reopened, Reviewing, Tested, 'Waiting for external release')",
-  "maxResults": 15,
+  "maxResults": 50,
   "fieldsByKeys": false,
   "fields": [
     "summary",
-    "status",
-    "assignee"
+    "priority",
+    "customfield_11131" // Offres
   ],
   "startAt": 0
-}`;
+};
+
+var jqlRoot = "project = MES AND Sous-projets = LP AND issuetype = Bug AND status in (Blocked, 'In Progress', OPEN, Reopened, Reviewing, Tested, 'Waiting for external release')";
+bodyData.jql = jqlRoot + " AND Client = vif";
+
+var body = JSON.stringify(bodyData);
 
 var options = {
     method: 'POST',
@@ -33,15 +36,20 @@ var options = {
       'Accept': 'application/json',
       'Content-type': 'application/json'
     },
-    body: bodyData
+    body: body
 };
 
-
-
-request(options, function (error, response, body) {
+request(options, function (error, response, responseBody) {
    if (error) throw new Error(error);
    console.log(
       'Response: ' + response.statusCode + ' ' + response.statusMessage
    );
-   console.log(body);
+
+   responseData = JSON.parse(responseBody);
+   console.log(responseData.total);
+
+   var TRSIssuesCount = _.filter(responseData.issues, function(issue) {
+     return issue.fields.customfield_11131.value === 'TRS';
+   }).length;
+   console.log(TRSIssuesCount);
 });
