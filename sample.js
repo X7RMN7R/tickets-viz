@@ -23,8 +23,8 @@ var bodyData = {
   "startAt": 0
 };
 
-var jqlRoot = "project = MES AND Sous-projets = LP AND issuetype = Bug AND status in (Blocked, 'In Progress', OPEN, Reopened, Reviewing, Tested, 'Waiting for external release')";
-bodyData.jql = jqlRoot + " AND Client = vif";
+var jqlRoot = "project = MES AND Sous-projets = LP AND issuetype = Bug AND status in (Blocked, 'In Progress', OPEN, Reopened, Reviewing, 'Waiting for external release')";
+bodyData.jql = jqlRoot;
 
 var body = JSON.stringify(bodyData);
 
@@ -47,9 +47,15 @@ request(options, function (error, response, responseBody) {
 
    responseData = JSON.parse(responseBody);
    console.log(responseData.total);
-
-   var TRSIssuesCount = _.filter(responseData.issues, function(issue) {
-     return issue.fields.customfield_11131.value === 'TRS';
-   }).length;
-   console.log(TRSIssuesCount);
+   console.log(_.countBy(responseData.issues, getOffer));
+   //console.log(responseData.issues[0].fields)
+   console.log(_.countBy(responseData.issues, getPriority));
 });
+
+function getOffer(issue) {
+  return issue.fields.customfield_11131.value;
+}
+
+function getPriority(issue) {
+  return issue.fields.priority.name;
+}
